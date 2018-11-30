@@ -53,18 +53,13 @@ func (self *DHGroup) GeneratePrivateKey(randReader io.Reader) (key *DHKey, err e
 	// However, since x is highly unlikely to be zero if p is big enough,
 	// we would rather use an iterative approach below,
 	// which is more efficient in terms of exptected running time.
-	x, err := rand.Int(randReader, self.p)
+	half := self.p.Div(self.p, new(big.Int).SetInt64(2))
+	x, err := rand.Int(randReader, half)
 	if err != nil {
 		return
 	}
+	x = x.Add(x, half)
 
-	zero := big.NewInt(0)
-	for x.Cmp(zero) == 0 {
-		x, err = rand.Int(randReader, self.p)
-		if err != nil {
-			return
-		}
-	}
 	key = new(DHKey)
 	key.x = x
 
